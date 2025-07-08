@@ -124,4 +124,3 @@ For any inquiries or support, please reach out to:
 
 ---
 
-Built with ❤️ by Himanshu Soni — aka h30s
