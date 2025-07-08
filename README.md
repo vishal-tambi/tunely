@@ -119,9 +119,8 @@ If you encounter issues:
 
 For any inquiries or support, please reach out to:
 
-- **Email**: [h30s.soni@gmail.com](mailto:h30s.soni@gmail.com)
-- **LinkedIn**: [Himanshu Soni](https://linkedin.com/in/himanshu-soni)
-- **Portfolio**: [thecodeofh30s.vercel.app](https://thecodeofh30s.vercel.app/)
+- **Email**: [tambivishal3@gmail.com](tambivishal3@gmail.com)
+
 
 ---
 
