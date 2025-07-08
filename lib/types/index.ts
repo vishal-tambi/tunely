@@ -55,7 +55,7 @@ export interface Vote {
 export interface PlaybackState {
   id?: string;
   room_id?: string;
-  current_song_id?: string | null;
+  current_song_id?: number | null;
   is_playing: boolean;
   playback_position: number;
   timestamp?: number;

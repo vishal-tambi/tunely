@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { createSupabaseClient } from '@/lib/supabase/server';
+// Add this line to force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 // GET: Fetch songs for a room
 export async function GET(req: NextRequest) {

@@ -552,46 +552,50 @@ export default function RoomClient({
   }, [refreshQueue]);  // Include refreshQueue in the dependency array
 
   // Manual refresh handler for debugging
-  const handleManualRefresh = async () => {
-    try {
-      console.log("Manual refresh triggered");
-      
-      // First, get all songs
-      const songs = await refreshQueue();
-      
-      // If no current song is set, try to find one
-      if (!currentSong) {
-        const nextSong = songs.find((s: Song) => !s.is_played);
-        if (nextSong) {
-          console.log(`Setting current song to: ${nextSong.title}`);
-          setCurrentSong(nextSong);
-        }
-      }
-      
-      // Refresh participants
-      const participantsRes = await fetch(`/api/rooms/join?roomId=${roomId}`);
-      if (participantsRes.ok) {
-        const data = await participantsRes.json();
-        if (data.participants) {
-          setCurrentParticipants(data.participants);
-        }
-      }
-      
-      setRefreshCounter(prev => prev + 1);
-      
-      toast({
-        title: "Refreshed",
-        description: "Queue and participants updated",
-      });
-    } catch (error) {
-      console.error("Manual refresh error:", error);
-      toast({
-        title: "Refresh Error",
-        description: "Failed to update queue or participants",
-        variant: "destructive"
-      });
+ // Replace the handleManualRefresh function (around lines 545-589) with this:
+
+// Manual refresh handler for debugging
+const handleManualRefresh = async () => {
+  try {
+    console.log("Manual refresh triggered");
+    
+    // First, refresh the queue (this updates the songs state)
+    await refreshQueue();
+    
+    // If no current song is set, try to find one from the current songs state
+    if (!currentSong) {
+      // Use the current songs state to find an unplayed song
+      const nextSong = songs.find((s: Song) => !s.is_played);
+      if (nextSong) {
+        console.log(`Setting current song to: ${nextSong.title}`);
+        setCurrentSong(nextSong);
+      } 
     }
-  };
+    
+    // Refresh participants
+    const participantsRes = await fetch(`/api/rooms/join?roomId=${roomId}`);
+    if (participantsRes.ok) {
+      const data = await participantsRes.json();
+      if (data.participants) {
+        setCurrentParticipants(data.participants);
+      }
+    }
+    
+    setRefreshCounter(prev => prev + 1);
+    
+    toast({
+      title: "Refreshed",
+      description: "Queue and participants updated",
+    });
+  } catch (error) {
+    console.error("Manual refresh error:", error);
+    toast({
+      title: "Refresh Error",
+      description: "Failed to update queue or participants",
+      variant: "destructive"
+    });
+  }
+};
   
   // Skip current song
   const skipCurrentSong = async () => {
@@ -722,37 +726,38 @@ export default function RoomClient({
         console.log("Votes subscription status:", status);
       });
       
-    // Subscribe to changes in the playback_state table
-    const playbackSubscription = supabase
-      .channel('playback-changes')
-      .on('postgres_changes', 
-        { 
-          event: '*', 
-          schema: 'public', 
-          table: 'playback_state',
-          filter: `room_id=eq.${roomId}`
-        }, 
-        (payload) => {
-          console.log("Received real-time update for playback state:", payload);
-          
-          // Only non-host users should update their playback state from real-time updates
-          if (!isHost) {
-            const newData = payload.new;
-            if (newData) {
-              setPlaybackState(prev => ({
-                ...prev,
-                is_playing: newData.is_playing,
-                playback_position: newData.playback_position,
-                current_song_id: newData.current_song_id,
-                updated_at: Date.now()
-              }));
-            }
-          }
+// Subscribe to changes in the playback_state table
+const playbackSubscription = supabase
+  .channel('playback-changes')
+  .on('postgres_changes', 
+    { 
+      event: '*', 
+      schema: 'public', 
+      table: 'playback_state',
+      filter: `room_id=eq.${roomId}`
+    }, 
+    (payload) => {
+      console.log("Received real-time update for playback state:", payload);
+      
+      // Only non-host users should update their playback state from real-time updates
+      if (!isHost) {
+        // Type assertion to ensure we have the right type
+        const newData = payload.new as PlaybackState;
+        if (newData && typeof newData.is_playing !== 'undefined') {
+          setPlaybackState(prev => ({
+            ...prev,
+            is_playing: newData.is_playing,
+            playback_position: newData.playback_position || 0,
+            current_song_id: newData.current_song_id || null,
+            updated_at: Date.now()
+          }));
         }
-      )
-      .subscribe((status) => {
-        console.log("Playback subscription status:", status);
-      });
+      }
+    }
+  )
+  .subscribe((status) => {
+    console.log("Playback subscription status:", status);
+  });
       
     // Subscribe to changes in the room_participants table
     const participantsSubscription = supabase

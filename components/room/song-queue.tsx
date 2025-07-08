@@ -70,7 +70,7 @@ export default function SongQueue({
           votesByType[vote.song_id][vote.vote_type]++;
           
           // Track user's own votes
-          if (vote.user_id === session.user.id) {
+          if (session?.user && vote.user_id === session.user.id) {
             userVotesByType[vote.song_id] = vote.vote_type;
           }
         });
@@ -81,7 +81,7 @@ export default function SongQueue({
     } catch (error) {
       console.error("Error fetching votes:", error);
     }
-  }, [session?.user?.id, roomId]);
+  }, [session?.user?.id, session?.user, roomId]);
 
   // Update local songs when songs prop changes
   useEffect(() => {
@@ -146,7 +146,7 @@ export default function SongQueue({
       const data = await response.json();
       
       if (data.songs && Array.isArray(data.songs)) {
-        setLocalSongs(data.songs.map(song => ({
+        setLocalSongs(data.songs.map((song: Song) => ({
           ...song,
           upvotes: votes[song.id]?.up || 0,
           downvotes: votes[song.id]?.down || 0,

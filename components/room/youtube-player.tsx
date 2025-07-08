@@ -16,7 +16,7 @@ interface YouTubePlayerProps {
     created_at?: string;
     room_id?: string;
   };
-  playbackState: PlaybackState;
+  playbackState: PlaybackState | null; // Allow null
   onVideoEnded: () => void;
 }
 
@@ -34,7 +34,8 @@ export default function YoutubePlayer({
   const getYouTubeEmbedUrl = () => {
     if (!currentSong?.youtube_id) return "about:blank";
     
-    const startTime = Math.floor(playbackState.playback_position || 0);
+    // Handle null playbackState - default to 0 if null
+    const startTime = Math.floor(playbackState?.playback_position || 0);
     
     // Parameters:
     // autoplay=1: Auto-play the video
@@ -102,8 +103,9 @@ export default function YoutubePlayer({
     checkEndIntervalRef.current = setInterval(() => {
       // If we have a duration, use it to check if the video has ended
       if (songDuration > 0) {
-        const elapsed = (Date.now() - playbackState.timestamp) / 1000;
-        const currentPosition = (playbackState.playback_position || 0) + elapsed;
+        // Handle null playbackState safely
+        const elapsed = playbackState?.timestamp ? (Date.now() - playbackState.timestamp) / 1000 : 0;
+        const currentPosition = (playbackState?.playback_position || 0) + elapsed;
         
         // If we're near the end of the song (within 5 seconds), trigger the ended callback
         if (currentPosition >= songDuration - 5) {
@@ -208,4 +210,4 @@ export default function YoutubePlayer({
       </CardContent>
     </Card>
   );
-} 
+}
