@@ -5,25 +5,11 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export default async function DashboardPage() {
-  console.log("Dashboard page loading...");
-  
   const session = await auth();
   
-  // Add detailed logging
-  console.log("Session data:", {
-    hasSession: !!session,
-    hasUser: !!session?.user,
-    userId: session?.user?.id,
-    userEmail: session?.user?.email,
-    userName: session?.user?.name
-  });
-  
   if (!session?.user) {
-    console.log("No session or user found, redirecting to login");
     redirect("/login");
   }
-
-  console.log("User authenticated, rendering dashboard");
 
   return (
     <div className="container py-12">
@@ -33,17 +19,6 @@ export default async function DashboardPage() {
           <p className="text-muted-foreground mt-2">
             Welcome back, {session.user.name}. Create a new room or join an existing one.
           </p>
-          
-          {/* Debug information - remove this after fixing */}
-          <div className="mt-4 p-4 bg-gray-100 rounded text-sm">
-            <strong>Debug Info:</strong>
-            <br />
-            User ID: {session.user.id}
-            <br />
-            Email: {session.user.email}
-            <br />
-            Name: {session.user.name}
-          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -26,6 +26,12 @@ export const {
     },
   },
   pages: {
-    signIn: "/login", // optional: custom login page
+    signIn: "/login",
   },
+  // Add these configurations for better production support
+  secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+  },
+  debug: process.env.NODE_ENV === "development",
 });
