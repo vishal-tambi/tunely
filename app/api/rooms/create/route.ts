@@ -20,6 +20,36 @@ export async function POST(request: Request) {
     // Create admin client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     
+    // First, ensure the user exists in the database
+    const { data: existingUser, error: userCheckError } = await supabase
+      .from("users")
+      .select("id")
+      .eq("id", session.user.id)
+      .single();
+    
+    if (userCheckError && userCheckError.code !== 'PGRST116') { // PGRST116 is "not found"
+      console.error("User check error:", userCheckError);
+      return NextResponse.json({ error: userCheckError.message }, { status: 500 });
+    }
+    
+    // If user doesn't exist, create them
+    if (!existingUser) {
+      const { error: userCreateError } = await supabase
+        .from("users")
+        .insert({
+          id: session.user.id,
+          email: session.user.email,
+          name: session.user.name,
+          image: session.user.image,
+          updated_at: new Date().toISOString(),
+        });
+      
+      if (userCreateError) {
+        console.error("User creation error:", userCreateError);
+        return NextResponse.json({ error: userCreateError.message }, { status: 500 });
+      }
+    }
+    
     // Generate room code
     const characters = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let roomCode = "";
