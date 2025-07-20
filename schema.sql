@@ -12,8 +12,10 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE,
   name TEXT,
   image TEXT,
+  phone_number TEXT NOT NULL UNIQUE CHECK (phone_number ~ '^\+?[0-9]{7,15}$'),
   updated_at TIMESTAMP WITH TIME ZONE
 );
+
 
 -- Create rooms table
 CREATE TABLE rooms (
